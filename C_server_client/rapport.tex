@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper, margin=0.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\title{Travail pratique \#2 - IFT-2245}
+\author{Samir Hachemi et Yi Jing Wang} 
+\begin{document}
+
+\maketitle
+
+\section{L'introduction du projet}
+Le but de ce projet est d'implémenter en C l'algorithme de banquier tout en familiarisant avec l'implémentation avec les sockets.Pour se faire, il faut en premier temps, implémenter le socket pour que le serveur et les clients puissent transmettre des requêtes entre eux. Nous avons ainsi 10 types de commandes à implémenter et à passer dans les requêtes. Une fois les requêtes clients sont transmises au serveur, on veut que ceux-ci soient traités selon l'algorithme de banquier pour gérer les différentes ressources et pour éviter l'interblocage.
+
+\section{Le déroulement du projet}
+Pourque les requêtes fonctionnent comme nous désirons, nous avons fait une petite modification lors de l'implémentation. Ainsi, le protocole de communication n'est plus binaire. Il est remplacé par la commande en entier dans la requête et celle-ci prend le format (commande, cmd\_type, tid, ...). Par exemple: pour une requête REQ au serveur, le code est de "build\_command(command, REQ, ct->id, client\_ressources\_needs, num\_resources )". Si vous voyez une requête avec des valeurs négatives chez le côté du serveur. C'est NORMAL, cette requête est seulement utilisée pour libérer les ressources allouées par clients. 
+
+Une autre modification est faite chez la méthode ct\_code de client\_thread. Comme nous avons plusieurs clients-threads et que l'initialisation de serveur se passe une fois seulement, au lieu de laisser passer un seul thread pour l'initialisation de serveur en bloquant les 4 autres à l'aide de la concurrence, cette exécution est implémentée de façon que seul le main-thread soit capable de faire initialiser le serveur. 
+
+Le système marche de la façon suivante: à l'aide des threads, on initialise tout d'abord 5 clients threads. Parmi ces clients, l'un d'entre eux va initialiser le serveur. La requête avec la commande "BEGIN" instancie le nombre de clients et celle avec la commande "CONF" donne le nombre de chaque ressource de départ à initialiser.
+Une fois le serveur est identifié, chaque client envoie ses propres requêtes au serveur. Durant ces requêtes, nous allons compter le nombre de thread par l'exécution du code "count++" lors de l'envoi de la première requête par le thread. Également lors de la première requête, on initialise les besoins max de chaque client avec la commande "INI". La dernière requête de chaque client est envoyée au serveur avec la commande "CLO" et on compte le nombre de threads terminés avec le code "count\_dispatched++".
+
+Le serveur, quant à lui, se configure d'abord avec les données contenues dans les requêtes "BEGIN", "CONF" et "INI". Les requêtes de la commande "REQ" sont ensuite reçues pour la demande de l'allocation des "ressources" dans le serveur. Pour bien gérer les ressources et d'éviter les blocages, l'algorithme de banquier est exigée. Les arrays bidimensionnels n x m comme client\_allocated\_resources (les ressources que le client en possède), client\_max\_resources (les ressources dont le client a besoin en total), clients\_needs (les ressources à allouer) sont créés pour analyser le besoin de chaque client. En effet, on peut représenter les ressources de chaque type que les clients possèdent et celles que les clients doivent avoir en tableaux de format suivant:
+
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c| } 
+ \hline
+  & ressource A & ressource B & ressource C  & ...\\ 
+ Client 1 & xxx & xxx & ... & ...\\ 
+ Client 2 & xxx & xxx & ... & ...\\ 
+ Client 3 & xxx & xxx & ... & ...\\ 
+ Client 4 & xxx & xxx & ... & ...\\ 
+ Client 5 & xxx & xxx & ... & ...\\ 
+ \hline
+\end{tabular}
+\end{center}
+Le tableau de ressources à allouer possède la même dimension et il est en effet la différence entre les deux tableaux précédents. 
+
+Nous gérons les ressources selon l'algorithme du banquier. Si on considère chaque rangée du tableau de ressources à allouer (c.-à-d. les différents types de ressources à allouer pour un seul client) comme un vecteur, les ressources libres de chaque type du serveur seraient un autre vecteur. En les comparant, on obtient 3 possibilités: soit les ressources demandées sont supérieures à celles dont le client ait besoin, soit les ressources demandées sont supérieures aux ressources disponibles du serveur, soit aucun problème directement visible. Dans le premier cas, on obtient une erreur d'excès et une réponse d'erreur est envoyée en retour au client. Dans le deuxième cas, le thread doit attendre que les ressources nécessaires soient libérées par d'autres threads. La réponse de retour est le "WAIT" pour ce cas. Si aucune erreur n'est détectée à cette étape, il faut encore vérifier si le système est en état sûr. Si l'état est sûr, la requête de "ACK" serait retournée au client-thread. Sinon, un blocage est observé et on retourne la réponse "ERR" .
+
+Une fois qu'une requête résultante est reçue par le client, le programme l'analyse tout de suite. S'il s'agit d'une requête d'erreur "ERR", nous incrémentons le nombre de requêtes non valides. S'il s'agit du cas de "WAIT", nous incrémentons le nombre de requêtes d'attente et faire "sleep" le thread à un temps précis (0.01 dans notre cas). Si c'est le cas de "ACK", nous incrémentons le nombre de requêtes accepté. Avant de faire cette étape, il faut également libérer toutes les "ressources" que le thread possède. Ici, on utilise la même opération que l'allocation des ressources en donnant les valeurs négatives de ressource allouées comme argument. Quand on fait soustraire ces valeurs négatives à partir du serveur, toutes les "ressources" empruntées sont ainsi rajoutées au serveur. Une fois tous les threads sont terminés, on retourne le résultat qui affiche l'information concernant sur le nombre de requêtes envoyées, le nombre de thread terminé, etc chez le serveur et chez le client.
+
+Une différence de nombre entre le requête valide du client et du serveur est observée. Ceci n'est pas une erreur. En effet, puisque les façons de compter les requêtes valides sont différentes chez le client et le serveur. Il est normal d'observer cette différence. Cependant, une différence est observée entre le nombre de requêtes traitées parce qu'on utilise également une requête au serveur pour libérer les ressources empruntées. Cependant, on ignore la raison que seulement 3 threads sont traité. Il est montré que les deux derniers threads ne peuvent pas être initialisés.
+
+On trouve également un taux de requête invalide relativement haute. En effet, ceci est causé parce que nous générons les requêtes d'allocation de ressources à une quantité random inférieure à la demande maximum. Comme nous n'avons aucun contrôle sur le nombre de ressources à demander, il est normal que la demande soit supérieure au client\_need et cette erreur est considérée comme une requête invalide selon notre implémentation.
+
+\section{La discussion du projet et l'apprentissage}
+
+
+La meilleure façon de déboguer pour ce TP est d'utiliser la fonction printf. Sans elle, il serait difficile de chercher les bogues qui se trouvent dans le système.
+
+L'importance de ce projet est de bien synchroniser les variables globales, sinon, beaucoups d'erreurs pourraient avoir lieu. Par exemple, si deux threads exécutent le code "count++" en même temps, au lieu de donner le résultat de +2, il se peut qu'on obtient seulement +1. Ainsi, l'ajout de mutex est très important pour ces variables. Chez "Client-Thread", les mutex sont utilisés lors de l'incrémentation du nombre de requêtes acceptées et invalides et d'autres variables du résultat. Chez "Server-Thread", la plupart des mutex sont utilisés pour conserver le nombre de ressources libres et le nombre de requêtes. 
+
+En outre de la protection de l'incrémentation de variable globale, le mutex est également ajouté pour initialiser les tableaux de ressources pour les clients. Lors du test de débogage chez la méthode st\_process\_requests dans le Server-Thread, il y avait toujours une erreur chez l'implémentation de l'algorithme de banquier lors de l'appel de la commande "REQ" par les clients. Cette dernière nous retourne toujours que notre requête est invalide.
+Nous pensions tout d'abord qui s'agit d'un problème de notre implémentation dans cette section. Cependant, après maints tests sur les codes, nous avons réalisé que le problème se trouvait ailleurs. Si aucun problème ne se trouvait sur l'exécution, il devrait être sur l'entrée des données. En effet, l'erreur se trouve dans l'algorithme de l'initialisation des ressources. Nous pensions, comme il s'agissait une initialisation seulement, la synchronisation des valeurs globales n'est pas importante puisque la valeur à initialiser est toujours 0. Or, il est montré, selon les tests de débogage, qu'avec malloc, beaucoups d'objets dans le tableau de ressources sont mal instanciés. Ensuite, lors de l'exécution de la requête selon l'algorithme de banquier, puisque les tableaux de ressources sont erronés, dans la plupart des cas, l'exécution retourne une valeur booléenne complètement fausse qui nous amène à envoyer la réponse d'erreur au client. Le tout est réglé une fois qu'on ajoute le mutex chez les codes d'initialisation.
+
+
+Notre implémentation de banquier est déjà expliquée en partie dans la section du déroulement du projet. Cependant, nous n'avions pas mentionné qu'il y avait beaucoup de travaux sur le traitement de l'état sûr. Pour déterminer si le système est en état sûr. Nous avons implémenté la fonction "detecte\_safe\_state". Dans la fonction, nous imaginons une table de ressources qui est identique à celle disponible de serveur. Si cette table satisfait à la demande de ressources d'un client, on fait l'hypothèse que ce client serait exécuté et toutes ces ressources seraient libérées. Nous additionnons alors ces ressources à la table de ressources. Si la table de ressource pouvait satisfaire tous les clients de cette manière, on dit que le système est en état sûr. La requête serait ainsi exécutée avec une réponse du serveur de type "ACK". Sinon, c'est le cas du blocage.  Ici, nous hésitons entre le choix de retourner la réponse "WAIT" ou la réponse "ERR". Dans ce cas, il est possible qu'en éliminant une requête, le système devienne en état sûr. Or, on ignore c'est lequel qui faut éliminer. La meilleure façon est donc de faire attendre la requête avec la commande "WAIT" comme réponse. Cependant, cette méthode est plus lente que le fait d'envoyer la réponse "ERR". Il s'agit donc une trade-off et on a choisi de retourner "ERR" comme réponse pour le cas de l'état non sûr. 
+
+\section{La conclusion}
+Le but de ce travail pratique est de nous faire familiariser avec la programmation avec des threads et des sockets et de nous faire apprendre la gestion de ressources à l'aide de l'algorithme du banquier. En résultat, nous avons réussi à communiquer entre le serveur et le client par l'envoi des requêtes qui contiennent les informations de différentes commandes. Les résultats de requêtes sont affichés précisément. 
+
+En bref, dans l'ensemble, le déroulement de notre travail est bien passé. Notre implémentation pourrait être mieux sur l'algorithme du banquier. Le niveau de complexité du code pourrait être moindre et l'ordre de passage des requêtes pourrait être plus flexible.
+
+
+
+\end{document}
+
