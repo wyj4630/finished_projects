@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/><!--le largeur du suport-->
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script> -->
+<!--         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"/> -->
+        <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script> -->
+        <link href="Sans_titre.css" rel="stylesheet" type="text/css" style="screen"></link>
+        <title>Réservation</title>
+    </head>
+    <body>
+        <header>
+            <nav>
+                <div id="martini">
+                    <a href="index.xhtml"><img  src="images/verre-a-martini.svg" alt= "logo" /></a>
+                </div>
+                <a href="index.xhtml" class="boutton">Accueil</a>
+                <a href="menu.xhtml" class="boutton">Menu</a>
+                <a href="information.xhtml" class="boutton">Information</a>
+                <a href="reservation.xhtml" class="boutton active">Réservation</a>
+            </nav>
+        </header>
+        <main id="p4">
+		        <h2>Réservation en ligne</h2>
+                <p>Pour toute réservation, veuillez remplir le formulaire.</p>
+            <form id="form" method="post"
+            action="http://www.iro.umontreal.ca/~lapalme/ift1005/Exercices/9/echoValeurs.cgi">
+
+                <fieldset>
+                    <legend>Information personnelle</legend>
+                  
+					    <div><label> Nom  </label><input type="text" placeholder="Nom"/>
+					        <label> Prénom </label><input type="text" placeholder="Prénom"/>
+					    </div>
+				    
+                   <div> <label>Sexe 
+                    <select name="sexe" size="1" tabindex="6">
+                        <option selected="selected" value="H">H</option>
+                        <option value="F">F</option>
+                    </select>
+					</label>
+                   </div>
+                    
+                    <div>
+					<label>Téléphone<input placeholder="000 000 0000"/>
+					</label>
+                   <div> <label>Courriel<input type="email" /></label></div>
+					</div>
+                </fieldset>
+                
+                <fieldset>
+                    <legend>Réservation</legend>
+                    <div>                        
+                    <label> Nom de la réservation <input type="text" placeholder="Nom et Prénom"/> </label>
+                    </div>
+                    <div>
+                    <label>Date de visite<input type="date" value="2017-12-11"/></label>
+					</div>
+                    <div>
+                        <label>Nb de place
+                        <select size="1">
+                            <option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="6">6</option>
+                            <option value="10">10</option>							
+                        </select>
+                    </label>
+                    </div>
+                    
+                    <div>	Demande spéciale </div>
+					<textarea name="demande speciale" placeholder="écrivez votre demande spéciale"></textarea>
+                    <div><label><input type="submit" value="Réserver"/></label></div>
+					
+                </fieldset>
+            </form>
+        </main>
+        <footer>
+            <a id="auteur" href="AuteurduSite.xhtml">Auteur du site</a>
+        </footer>
+    </body>
+</html>
