@@ -1,0 +1,17 @@
+﻿\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+
+\title{Travail pratique \#1 - IFT-2245}
+\author{Moi et L'autre}
+
+\begin{document}
+
+\maketitle
+
+     Le but de cet exercice est d'exploiter le syst\`eme d'exploitation avec la langue de programmation C. 
+     Le racine de cet exercice est de distinguer la commande demand\’ee par l’input. Pour se faire, nous allons transformer la cha\^ine de caract\`ere d’entr\’ee en un tableau de string en « splitant » les entr\’ees vides. Ainsi, nous avons un tableau de caract\`eres dont la valeur de l’indice 0 repr\’esente la fonctionnalit\’e de l’ex\’ecution et les valeurs qui s’ensuivent sont les param\’etres de l’ex\’ecution. 
+     Une fois comprendre ce principe, on peut alors s’attaquer au probl\`eme. On sait que la plupart de nos entr\’ees sont des combinaisons de diff\’erentes ex\’ecution selon les op\’erateurs de logique comme « // », « && » ou elles sont structur\’ees selon les boucles de condition « if » avec « if…;do xxx; done » comme structure. 
+
+\end{document}
+

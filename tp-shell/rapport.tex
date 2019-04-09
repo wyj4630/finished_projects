@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{Travail pratique \#1 - IFT-2245}
+\author{Yi Jing Wang and Samir Hachemi }
+\date{February 2019}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction et Analyse de projet}
+Le but de cet exercice est de découvrir le système d'exploitation en utilisant la langue de programmation C. Au début, on pensait qu'il s'agit de programmer les commandes utilisées dans le terminal Linux. En effet, le vrai but est d'identifier les différentes commandes à partir d'un string d'une taille inférieur à 100 caractères ce qui rend la tâche beaucoup plus facile. Pour en faire, nous allons transformer la chaîne de caractère d'entrée en un array de commandes qui sont séparées individuellement par les opérateurs logiques, les groupements de conditions "if" et qui sont caractérisées par les symboles spéciaux comme "$>$" ou "\&". Ces commandes sont transformées ensuite en des tableaux de structures dont celle à l'index 0 représente le nom ou la fonctionnalité de la commande et ceux qui s'ensuivent sont les arguments de l'exécution.
+
+\section{Discussion}
+
+Une fois que l'on comprend ce principe , on peut alors s'attaquer au problème. Notre but est d'implémenter le code en suivant exactement le chemin de notre raisonnement. C'est-à-dire de diviser le string d'entrée en différentes commandes dans un premier temps et de diviser chaque commande en un array composé d'un nom de commande et de plusieurs arguments afin de les analyser en détail un par un.
+
+
+
+Retourner dans notre code, nous avons construit tout d'abord la méthode "Main" pour traiter les signaux comme ctrl-z et pour lire les commandes d'entrée en array de char. Ces entrées sont combinées en string et une fois la lecture est finie, on envoie le string dans la méthode d'exécution "execute\_command" pour les traiter plus en détail.
+
+
+
+Une chose que nous avons beaucoup discutée est l'ordre de traitement des opérateurs logiques et la façon de les interpréter. On sait que les opérateurs "\textbar \textbar" exécutent les différentes commandes en parallèle alors que les opérateurs "\&\&" les exécutent de façon consécutive. Ainsi, il faut toujours faire le parallèle en avant. 
+C'est pourquoi "\textbar \textbar" est la première chose qu'on cherche à identifier dans le string de commandes. Une deuxième question vient: Si on a une entrée de type "x1 \&\& x2 \textbar\textbar  x3 \&\& x4" et on sait que x1, x3 seraient exécutés dans de différents processus, comment implémenter le code pour que x2 puisse suivre le processus de x1 et que x4 puisse suivre celui de x3? L'implémentation est faite de façon suivante. Le string de commandes est tout d'abord substitué en un array de or\_commandes qu'on sépare avec la méthode "split\_string" qu'on a implémentée préalablement. Chaque or\_commande est une chaîne de string qui est ensuite divisée en un tableau de and\_commandes dont l'indice 0 de chaque tableau ouvre un fork()(c-à-dire créer un processus) dans lequel chaque tableau de and\_commandes est traité en parallèle.
+
+
+
+Nous avons eu beaucoup de difficultés lors de l'interprétation d' if-clause, car ceci peut être apparu dans n'importe quel niveau du string de commandes. Un if\_commande peut exister tout seul dans le string d'entrées. Il peut être considéré aussi comme un or\_ ou un and\_commande si un opérateur logique lui est attribué. On peut également trouver des or/and\_commandes à l'intérieur de if\_commande. On a suivi la description d'if commande dans l'énoncé. Ainsi, chaque if commande peut être attribué à un opérateur logique, mais à l'intérieur de chaque bloque d'if commande, seules les commandes simples peuvent exister. On conclut qu'une récursion est nécessaire pour l'implémentation du code. Ainsi, lorsqu'on détecte la présence du caractère ";" dans un and\_commande chez la méthode "prepare\_commands", on l'envoie dans la méthode "execute\_if\_com-mandes". Cette dernière, lors de l'analyse, renvoie la chaîne de commande dans chaque bloque à tester et à exécuter dans la méthode de départ pour ensuite exécuter. (Exemple voir la section d'Annexe)
+
+Une fois les commandes sont bien identifiées et séparées, on les envoie individuellement dans la méthode "execute\_commmand" pour les exécuter. On a également ajouté la méthode "parse\_command" dans le but d'enlever les espaces blancs dans les commandes comme la présence de "\textbackslash t" ou "\textbackslash n" qui peut exister dans leur string. La gestion de la commande de mise en background du processus qui est attribuée par "\&" est gérée pour être différenciée de l'opérateur logique "et". Cet ajustement est fait dans la méthode "split\_string".
+
+\section{Conclusion}
+Le but de ce travail pratique est de nous familiariser la création et la gestion de processus en manipulant les commandes Linux en C. En résultat, on a réussi à faire fonctionner le système de commande avec les opérateurs logiques et la redirection de sortie et gestion de background processus avec "\&" et "$>$". On a réussi également à la commande ctrl-z. Cependant, pour la section d'"if", on a trouvé des difficultés à cerner l'objectif. C'est pourquoi on l'a simplement implémentée comme une commande classique de "if-else" sans imbrication et avec une commande unique dans chaque bloque. 
+
+
+En effet, dans l'ensemble, le déroulement de notre travail est bien passé. Ça nous a permis d'approfondir notre connaissance sur C et de nous familiariser avec les commandes Linux, leur façon de fonctionner les processus, malgré certaines difficultés avec "if". Après quelques réflexions, l'implémentation aurait pu être mieux si on avait construit un struct pour les processus dans lesquels toutes les informations concernant sur ces derniers seront sauvegardées telles que leur regroupement (or ou and), leurs arguments, leur condition nécessaire (if),  leur redirection, etc.
+
+\section{Annexe}
+Cette section décrit les règlements d'entrée pour les inputs
+\subsection{structure d'entrée}
+
+    Le syntaxe est très strict pour les entrées
+    
+    
+    exemple:
+    
+   [notre shell]: echo bonjour
+   
+    output:bonjour
+
+\bigskip
+
+[notre shell]:echobonjour
+
+output: error
+
+\bigskip
+
+[notre shell]:echo bonjour \&\& echo bonjour
+
+output: bonjour
+
+output: bonjour
+
+\bigskip
+[notre shell]:echo bonjour\&\&echo bonjour
+
+output: bonjour
+
+output: bonjour
+
+
+\subsection{if-clause}
+    On a considère seulement la structure "if xxx; do xxx; [else]; done" pour les if-clauses. exemple de la structure d'entrée:
+    
+exemple:
+
+[notre shell]:(commande) \&\& if commande; do commande;[commande]; done
+
+\end{document}
