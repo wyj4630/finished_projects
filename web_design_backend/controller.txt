@@ -1,0 +1,53 @@
+
+var $total, $start_date, $ending_date, $baseline;
+
+var phpRequest = function($destinationId){
+	var dataString = "action=action&start="+$start_date+"&end="+$ending_date+"&total="+$total+"&baseline="+$baseline;
+	$.ajax({
+           type: "POST",
+           url: ' https://wyj4630phpforplogg.000webhostapp.com/PhpTest.php',
+           data:dataString,
+           success:function(html) {
+               $destinationId.append(html);
+           },
+		   fail :function(){
+			   $destinationId.append("<p id =\"tab\">failed</p>");
+		   },
+		   error : function(){
+			   alert("error");
+		   }
+    });
+}
+
+var onClick = function($requestId, $destinationId){
+	$requestId.click(function(){
+		if($("#tab").length != 0){
+			var elem = document.getElementById("tab");
+			elem.parentNode.removeChild(elem);
+		}
+		$start_date = $("#start_date").val();
+		$total = $("#total").val();
+		$ending_date = $("#ending_date").val();
+		$baseline = $("#baseline").val();
+		
+		if($start_date == "" || $ending_date == "" || $total.length == 0 || $baseline.length == 0){
+			alert("please enter all arguments before sending");
+		}
+		else if(new Date($start_date).getTime() > new Date($ending_date).getTime()){		
+			alert("start date must be smaller than ending date");
+		}
+		else if($total < 0){
+			alert("please enter a valide number for total");
+		}
+		else if ($baseline < 0 || $baseline > 100){
+			alert("baseline between 0 and 100");
+		}
+		else{
+		    phpRequest($destinationId);
+		}
+	});
+}
+
+$(document).ready(function(){
+	onClick($("#btn"), $("#wang"));
+});

@@ -1,0 +1,148 @@
+<?php
+/*
+for direct testing, use test_php(start_date, ending_date, total, baseline)
+*/
+
+header('Access-Control-Allow-Origin: *');
+/*========================Class Object========================*/
+
+
+class DailyCount{
+    private $dateS;
+    private $weekDay;
+    private $isWeekday;
+    private $countNb;
+    public function __construct($s){
+        $this->dateS = $s;
+        $this->weekDay = date('w',strtotime($s));
+        if($this->weekDay != 0 && $this->weekDay != 6){
+            $this->isWeekday = true;
+        }
+        else{
+            $this->isWeekday = false;
+        }	  
+    }  
+    public function getDate(){
+        return $this->dateS;
+    }
+    public function getWeekday(){
+	    return $this->weekDay;
+    }  
+    public function getIsWeekday(){
+	    return $this -> isWeekday;
+    }
+    public function setCount($n){
+        $this->countNb = $n;
+    }
+    public function getCount(){
+        return $this->countNb;
+    }
+}
+
+
+/*===========================function=========================*/
+
+
+/**function for random distribution
+  *@param integer $total
+  *@param integer $baseline
+  *@param integer $weekdayCount
+  *@return array([] => integer)
+  */
+function getNbArray($total, $baseline, $weekdayCount){
+    $distribution = round((rand(0.99*$total, 1.01*$total)), 2);
+	$min = round($total*$baseline/(100*$weekdayCount), 2);
+	$rest = round(($distribution - $weekdayCount*$min), 2);
+	$array = array();
+	for($i = 1; $i <= $weekdayCount; $i++){
+		$temp = round(rand(0, $distribution*200/$weekdayCount)/100, 2);
+		if($temp > $rest || $i == $weekdayCount){
+			$array[] = round(($rest + $min), 2);
+            if($rest > 0){
+                $rest = 0;
+            }
+		}else{
+			$array[] = round(($temp + $min), 2);
+            $rest -= $temp;
+		}
+	}
+	return $array;
+}
+
+/**settings
+  *@param date $start_date
+  *@param date $end_date
+  *@param integer $total
+  *@param integer $baseline
+  *@return array([date]=>integer)
+  */
+function test_php($start_date, $end_date, $total, $baseline){
+	
+	$start_date1 = strtotime($start_date);
+    $end_date1 = strtotime($end_date);
+    $datediff = round(($end_date1 - $start_date1)/(60*60*24));
+    
+	$weekdayCount = 0;
+    $array = array();
+	for($i = 0; $i <= $datediff; $i++){
+        $next_date = $start_date1+$i*60*60*24;
+        $new_day = new DailyCount(date('Y-m-d', $next_date));
+        if($new_day->getIsWeekday()){
+            $weekdayCount++;
+        }
+        array_push($array, $new_day);
+	}
+    
+    $nbArray = getNbArray($total, $baseline, $weekdayCount);
+    
+    $result = array();
+    for($i = 0; $i <= $datediff; $i++){
+        $dateString = $array[$i]->getDate();
+        if($array[$i]->getIsWeekday()){
+            $temp = array_pop($nbArray);
+            $array[$i]->setCount($temp);
+            $result[$dateString] = $array[$i]->getCount();
+        }else{
+            $array[$i]->setCount(0);
+            $result[$dateString] = $array[$i]->getCount();            
+        }
+    }
+    return $result;  
+}
+
+/**main function
+  *@param date $start_date
+  *@param date $end_date
+  *@param integer $total
+  *@param integer $baseline
+  *@return string
+  */
+function buildHtmlTable($start_date, $end_date, $total, $baseline){
+	$array = test_php($start_date, $end_date, $total, $baseline);
+	$html = '<table id = "tab">';
+	$html .='<tr class="title"><th>Date</th><th>Count</th></tr>';
+	foreach($array as $key => $value){
+		$nb_string = number_format($value, 2);
+		$html .='<tr class="content"><td class="date">';
+		$html .=$key;
+		$html .='</td><td class="count">';
+		$html .=$nb_string;
+		$html .='</td></tr>';
+	}
+	$html .='</table>';		
+	return $html;		
+}	
+
+/*==========================Initialize=========================*/	
+
+if(isset($_POST['action'])){
+	$start_date = $_POST['start'];
+	$ending_date = $_POST['end'];
+	$totalAmount = $_POST['total'];
+	$baseline = $_POST['baseline'];
+	$start_date = date("Y-m-d",strtotime($start_date));
+	$ending_date = date("Y-m-d",strtotime($ending_date));
+	echo buildHtmlTable($start_date,$ending_date,$totalAmount,$baseline);
+}
+	
+?>

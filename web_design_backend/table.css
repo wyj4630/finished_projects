@@ -1,0 +1,39 @@
+body{
+	font-family:sans-serif;
+	font-family:arial;
+	color:black;
+	margin:5px;
+}
+fieldset{
+	width:500px;
+	margin:50px;
+}
+.argument_line label{
+	width:150px;
+	display:inline-block;
+}
+.argument_line input{
+	width: 120px;
+	display:inline-block;
+}
+
+
+#wang{
+	width:500px;
+	margin:0px 50px 50px 50px;
+}
+table{
+	boder-collapse:separate;
+}
+td, th{
+    border:1px solid black;
+}
+.date{
+	width: 300px;
+    text-align: center;
+}
+.count{
+	text-align: right;
+	width: 200px;
+	padding-right:100px;
+}
