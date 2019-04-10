@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<!--ex08 Yi Jing Wang et Mike Useni-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <title>sapin noel</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <link href="Sans_titre4.css" rel="stylesheet" type="text/css" style="screen" />
+    </head>
+    <body>
+        <svg xmlns="http://www.w3.org/2000/svg"  xmlns:xlink="http://www.w3.org/1999/xlink" height="1000" width="1000">
+            <linearGradient id="triangle">
+                    <stop offset="0" stop-color="yellow"/>
+                    <stop offset="1" stop-color="green"/>
+            </linearGradient>
+            <path id="texte" d="M55,37 Q100,-10 145,37 " fill="none"/>
+            <text x="125">
+                <textPath xlink:href="#texte">Joyeux Noël</textPath>
+            </text> 
+            <polygon points="100,15 120.5,40.5 150.7,40.1 134,59.5 140.4,90.3 100,71.9 55.6,90.3 64.9,59.5 45.2,40.1 80.4,39.5" 
+                style="fill:yellow; stroke:black; stroke-width:1px"/>
+            
+            <polygon points="100,75 1,350 210,350" style="fill:url(#triangle); stroke:black; stroke-width:3px"/> 
+            
+            <rect x="75" y="350" width="50" height="40" style="fill:brown; stroke:black; stroke-width:2px "/>
+            <polygon points="50,390 145,390 135,450 60,450" style="fill:black" stroke="black" stroke-width="10px" />          
+            <line x1="116" y1="115" x2="73" y2="155" stroke-width="10" stroke="blue" stroke-linecap="round"/>
+            <line x1="116" y1="115" x2="73" y2="155" stroke-width="10" stroke="grey" stroke-dasharray="8,3,2,18"/>
+            <line x1="73" y1="155" x2="160" y2="225" stroke-width="10" stroke="blue" stroke-linecap="round"/>
+            <line x1="73" y1="155" x2="160" y2="225" stroke-width="10" stroke="grey" stroke-dasharray="8,3,2,18"/>
+            <line x1="160" y1="225" x2="21" y2="290" stroke-width="10" stroke="blue" stroke-linecap="round"/>
+            <line x1="160" y1="225" x2="21" y2="290" stroke-width="10" stroke="grey" stroke-dasharray="8,3,2,18"/>
+            <line x1="21" y1="290" x2="201" y2="325" stroke-width="10" stroke="blue" stroke-linecap="round"/>
+            <line x1="21" y1="290" x2="201" y2="325" stroke-width="10" stroke="grey" stroke-dasharray="8,3,2,18"/>
+            
+            <circle cx="100" cy="190" r="10" stroke="black" stroke-width="2" fill="red" >
+                <animate id="et" attributeName="cx" begin="0s" dur="10s" from="80" to="120" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="140" cy="280" r="10" stroke="black" stroke-width="2" fill="yellow" >
+                <animate id="et2" attributeName="cy" begin="0s" dur="3s" from="270" to="290" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="60" cy="320" r="10" stroke="black" stroke-width="3" fill="blue" >
+                <animate id="et3" attributeName="cx" begin="0s" dur="5s" from="55" to="65" repeatCount="indefinite"/>
+            </circle>
+
+            
+            
+        </svg>
+        
+    </body>
+</html>
